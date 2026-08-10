@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import myLogo from "./aniai_logo_v1_recall.png";
-import AccessGate from "./AccessGate";
-import { apiFetch, getStoredKey, UnauthorizedError } from "./api";
+import { apiFetch } from "./api";
 
 const PLACEHOLDER_EXAMPLES = [
   "I'm new to anime, what should I watch first?",
@@ -46,11 +45,7 @@ function WhereToWatch({ animeId }) {
       }
       setPlatforms(data.streaming);
       setState("loaded");
-    } catch (err) {
-      if (err instanceof UnauthorizedError) {
-        window.location.reload();
-        return;
-      }
+    } catch {
       setState("error");
     }
   }
@@ -179,22 +174,14 @@ function App() {
   const [discoverItems, setDiscoverItems] = useState([]);
   const [spoilerFree, setSpoilerFree] = useState(true);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
-  const [unlocked, setUnlocked] = useState(() => !!getStoredKey());
   const inputRef = useRef(null);
 
   useEffect(() => {
-    if (!unlocked) return; // avoid a fetch-401-reload loop before a key is even entered
     apiFetch("/discover")
       .then((res) => (res.ok ? res.json() : []))
       .then(setDiscoverItems)
-      .catch((err) => {
-        if (err instanceof UnauthorizedError) {
-          window.location.reload();
-          return;
-        }
-        setDiscoverItems([]);
-      });
-  }, [unlocked]);
+      .catch(() => setDiscoverItems([]));
+  }, []);
 
   // Cycles the search box's placeholder through a few example queries -- paused while the
   // user has actually typed something, since the placeholder is hidden then anyway.
@@ -205,10 +192,6 @@ function App() {
     }, PLACEHOLDER_INTERVAL_MS);
     return () => clearInterval(id);
   }, [query]);
-
-  if (!unlocked) {
-    return <AccessGate onUnlocked={() => setUnlocked(true)} />;
-  }
 
   // Expands/collapses a past conversation turn's recommendations (the latest turn is always
   // shown expanded regardless of this state -- see isExpanded below).
@@ -254,10 +237,6 @@ function App() {
       setTurns((prev) => [...prev, { query, message: data.message, recommendations: data.recommendations }]);
       setQuery("");
     } catch (err) {
-      if (err instanceof UnauthorizedError) {
-        window.location.reload();
-        return;
-      }
       setError(err.message);
     } finally {
       setLoading(false);
