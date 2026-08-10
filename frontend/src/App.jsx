@@ -255,7 +255,7 @@ function App() {
           </button>
         )}
       </div>
-      <p className="tagline">Find something to watch, where to watch it, and what the world thinks.</p>
+      <p className="tagline">Find anime to watch, where to watch it, and what the world thinks.</p>
 
       <form onSubmit={handleSubmit} className="query-form">
         <input
