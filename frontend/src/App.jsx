@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
-import myLogo from "./animeszn_logo_white_text.png";
+import myLogo from "./aniai_logo_v1_recall.png";
 import AccessGate from "./AccessGate";
 import { apiFetch, getStoredKey, UnauthorizedError } from "./api";
 
@@ -268,7 +268,7 @@ function App() {
     <div className="app">
       <div className="header-row">
         <h1 className="logo">
-          <img src={myLogo} alt="Anime SZN" className="logo-image" />
+          <img src={myLogo} alt="AniAI" className="logo-image" />
         </h1>
         {turns.length > 0 && (
           <button type="button" className="reset-button" onClick={() => setTurns([])}>

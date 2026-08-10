@@ -29,7 +29,7 @@ export default function AccessGate({ onUnlocked }) {
   return (
     <div className="app">
       <h1 className="wordmark">
-        ANIME<span className="wordmark-accent">SZN</span>
+        ANI<span className="wordmark-accent">AI</span>
       </h1>
       <p className="tagline">This is a limited preview. Enter your access key to continue.</p>
       <form onSubmit={handleSubmit} className="query-form">

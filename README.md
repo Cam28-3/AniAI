@@ -1,4 +1,4 @@
-# AnimeSZN
+# AniAI
 
 An agentic RAG application for anime discovery and recommendation. An LLM agent reasons about
 a user's request, chooses tools (title search, semantic search, similarity search), and checks

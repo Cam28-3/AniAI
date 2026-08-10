@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 
 from app.config import settings
 
-ACCESS_KEY_HEADER = "X-AnimeSZN-Key"
+ACCESS_KEY_HEADER = "X-AniAI-Key"
 _EXEMPT_PATHS = {"/health"}
 
 
