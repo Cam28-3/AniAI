@@ -114,6 +114,23 @@
   cursor: default;
 }
 
+.thinking-status {
+  margin: -20px 0 24px;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  animation: thinking-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes thinking-pulse {
+  0%, 100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 .spoiler-toggle {
   display: inline-flex;
   align-items: center;

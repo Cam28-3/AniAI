@@ -14,6 +14,17 @@ const PLACEHOLDER_EXAMPLES = [
 ];
 const PLACEHOLDER_INTERVAL_MS = 3000;
 
+// The backend call is a single blocking request (the agent's tool-use loop runs entirely
+// server-side), so this is a cosmetic rotation, not real progress -- just keeps the wait from
+// feeling dead.
+const THINKING_PHRASES = [
+  "Searching titles...",
+  "Checking community reception...",
+  "Weighing candidates...",
+  "Putting together recommendations...",
+];
+const THINKING_INTERVAL_MS = 1800;
+
 // Fallback link to a title's AniList page, shown alongside (or instead of) streaming platform
 // links -- always available since every ingested title has an AniList id.
 function AniListPill({ url }) {
@@ -174,6 +185,7 @@ function App() {
   const [discoverItems, setDiscoverItems] = useState([]);
   const [spoilerFree, setSpoilerFree] = useState(true);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [thinkingIndex, setThinkingIndex] = useState(0);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -192,6 +204,17 @@ function App() {
     }, PLACEHOLDER_INTERVAL_MS);
     return () => clearInterval(id);
   }, [query]);
+
+  // Cycles the "thinking" status text while a /recommend request is in flight -- purely cosmetic,
+  // the backend call is a single blocking request with no real incremental progress to report.
+  useEffect(() => {
+    if (!loading) return;
+    setThinkingIndex(0);
+    const id = setInterval(() => {
+      setThinkingIndex((i) => (i + 1) % THINKING_PHRASES.length);
+    }, THINKING_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [loading]);
 
   // Expands/collapses a past conversation turn's recommendations (the latest turn is always
   // shown expanded regardless of this state -- see isExpanded below).
@@ -270,6 +293,8 @@ function App() {
           {loading ? "Thinking..." : "Ask"}
         </button>
       </form>
+
+      {loading && <p className="thinking-status">{THINKING_PHRASES[thinkingIndex]}</p>}
 
       <label className="spoiler-toggle">
         <input
