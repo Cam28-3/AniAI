@@ -22,8 +22,9 @@ const THINKING_PHRASES = [
   "Checking community reception...",
   "Weighing candidates...",
   "Putting together recommendations...",
+  "Looking up streaming sources...",
 ];
-const THINKING_INTERVAL_MS = 1800;
+const THINKING_INTERVAL_MS = 1200;
 
 // Fallback link to a title's AniList page, shown alongside (or instead of) streaming platform
 // links -- always available since every ingested title has an AniList id.
