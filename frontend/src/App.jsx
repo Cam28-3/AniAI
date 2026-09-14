@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import myLogo from "./aniai_logo_v1_recall.png";
-import { apiFetch } from "./api";
+import Auth from "./Auth";
+import { apiFetch, clearStoredToken, fetchConversations, fetchMe, getStoredToken } from "./api";
 
 const PLACEHOLDER_EXAMPLES = [
   "I'm new to anime, what should I watch first?",
@@ -176,7 +177,8 @@ function DiscoverCard({ item, onPick }) {
 }
 
 // Root component: query box, spoiler toggle, homepage discovery grid, and the growing list of
-// conversation turns. All state is client-side only -- no backend session storage.
+// conversation turns. Works fully logged-out; when logged in, turns are also persisted
+// server-side (see POST /recommend) and restored from GET /conversations on load.
 function App() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -187,6 +189,8 @@ function App() {
   const [spoilerFree, setSpoilerFree] = useState(true);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [thinkingIndex, setThinkingIndex] = useState(0);
+  const [user, setUser] = useState(null);
+  const [showAuth, setShowAuth] = useState(false);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -194,6 +198,22 @@ function App() {
       .then((res) => (res.ok ? res.json() : []))
       .then(setDiscoverItems)
       .catch(() => setDiscoverItems([]));
+  }, []);
+
+  // Restores a logged-in session on load, if a token is already stored -- validates it via
+  // /auth/me, then seeds `turns` from the user's persisted history so it survives a reload.
+  useEffect(() => {
+    if (!getStoredToken()) return;
+    fetchMe()
+      .then((u) => {
+        setUser(u);
+        return fetchConversations();
+      })
+      .then((history) => setTurns(history))
+      .catch(() => {
+        clearStoredToken();
+        setUser(null);
+      });
   }, []);
 
   // Cycles the search box's placeholder through a few example queries -- paused while the
@@ -267,19 +287,49 @@ function App() {
     }
   }
 
+  function handleLogout() {
+    clearStoredToken();
+    setUser(null);
+    setTurns([]);
+  }
+
   return (
     <div className="app">
       <div className="header-row">
         <h1 className="logo">
           <img src={myLogo} alt="AniAI" className="logo-image" />
         </h1>
-        {turns.length > 0 && (
-          <button type="button" className="reset-button" onClick={() => setTurns([])}>
-            New conversation
-          </button>
-        )}
+        <div className="header-actions">
+          {turns.length > 0 && (
+            <button type="button" className="reset-button" onClick={() => setTurns([])}>
+              New conversation
+            </button>
+          )}
+          {user ? (
+            <button type="button" className="reset-button" onClick={handleLogout}>
+              Log out ({user.email})
+            </button>
+          ) : (
+            <button type="button" className="reset-button" onClick={() => setShowAuth(true)}>
+              Log in
+            </button>
+          )}
+        </div>
       </div>
       <p className="tagline">Find anime to watch, where to watch it, and what the world thinks.</p>
+
+      {showAuth && !user && (
+        <Auth
+          onAuthenticated={(u) => {
+            setUser(u);
+            setShowAuth(false);
+            fetchConversations()
+              .then(setTurns)
+              .catch(() => {});
+          }}
+          onCancel={() => setShowAuth(false)}
+        />
+      )}
 
       <form onSubmit={handleSubmit} className="query-form">
         <input

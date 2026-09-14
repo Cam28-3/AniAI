@@ -1,4 +1,25 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
+
+
+class SignupRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(..., min_length=8, max_length=72)  # 72 bytes is bcrypt's hard limit
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(..., min_length=1, max_length=72)
+
+
+class UserOut(BaseModel):
+    id: int
+    email: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserOut
 
 
 class HistoryRecommendationIn(BaseModel):
@@ -26,6 +47,12 @@ class RecommendationOut(BaseModel):
     score: float | None
     community_flag: str | None
     image_url: str | None
+
+
+class ConversationTurnOut(BaseModel):
+    query: str
+    message: str
+    recommendations: list[RecommendationOut]
 
 
 class RecommendResponse(BaseModel):
